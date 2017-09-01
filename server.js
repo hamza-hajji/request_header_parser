@@ -8,6 +8,7 @@
 var fs = require('fs');
 var express = require('express');
 var app = express();
+var os = require('os');
 
 if (!process.env.DISABLE_XORIGIN) {
   app.use(function(req, res, next) {
@@ -32,11 +33,27 @@ app.route('/_api/package.json')
       res.type('txt').send(data.toString());
     });
   });
-  
+
 app.route('/')
     .get(function(req, res) {
 		  res.sendFile(process.cwd() + '/views/index.html');
-    })
+    });
+
+app.route('/api/whoami')
+  .get(function (req, res) {
+    var software = /\(([^)]+)\)/.exec(req.headers['user-agent'])[0]
+                                .replace(/[\(\)]/g, ''); // removing parentheses
+    console.log(req.connection.remoteAddress);
+    console.log(software);
+    var language = req.headers['accept-language'].split(',')[0];
+    var ip = (req.headers['x-forwarded-for'] || '').split(',')[0]
+                || req.connection.remoteAddress;
+    res.json({
+      language: language,
+      software: software,
+      ip:       ip
+    });
+  });
 
 // Respond not found to all the wrong routes
 app.use(function(req, res, next){
@@ -50,10 +67,9 @@ app.use(function(err, req, res, next) {
     res.status(err.status || 500)
       .type('txt')
       .send(err.message || 'SERVER ERROR');
-  }  
+  }
 })
 
-app.listen(process.env.PORT, function () {
+app.listen(process.env.PORT || 3000, function () {
   console.log('Node.js listening ...');
 });
-
