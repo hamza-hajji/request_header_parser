@@ -41,16 +41,15 @@ app.route('/')
 
 app.route('/api/whoami')
   .get(function (req, res) {
-    var software = /\(([^)]+)\)/.exec(req.headers['user-agent'])[0]
-                                .replace(/[\(\)]/g, ''); // removing parentheses
-    console.log(req.connection.remoteAddress);
-    console.log(software);
+    var operating_sys = /\(([^)]+)\)/.exec(req.headers['user-agent'])[0]
+                                .replace(/[\(\)]/g, '') // removing parentheses
+                                .split(';')[0];
     var language = req.headers['accept-language'].split(',')[0];
     var ip = (req.headers['x-forwarded-for'] || '').split(',')[0]
                 || req.connection.remoteAddress;
     res.json({
       language: language,
-      software: software,
+      software: operating_sys,
       ip:       ip
     });
   });
